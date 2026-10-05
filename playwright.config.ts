@@ -11,7 +11,13 @@ export default defineConfig({
   expect: {
     timeout: 10_000,
   },
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: process.env.CI
+    ? [
+        ['blob', { outputDir: 'blob-report' }],
+        ['github'],
+        ['list'],
+      ]
+    : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: env.baseURL,
     actionTimeout: 15_000,
@@ -28,13 +34,13 @@ export default defineConfig({
         ...(process.env.PW_CHANNEL === 'chrome' ? { channel: 'chrome' as const } : {}),
       },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
   ],
 });

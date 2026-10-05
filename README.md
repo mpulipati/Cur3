@@ -17,6 +17,7 @@ npm run test:chromium    # Chromium only
 npm run test:headed      # headed Chromium
 npm run test:ui          # Playwright UI mode
 npm run report           # last HTML report
+npm run report:merge     # merge local blob-report/ into HTML
 ```
 
 Override the target site with `BASE_URL`. Default timeout is `TIMEOUT_MS` (milliseconds).
