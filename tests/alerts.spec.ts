@@ -3,7 +3,6 @@ import { expect, test } from '../src/fixtures/test-fixtures';
 test.describe('Alerts and windows', () => {
   test('accepts the simple alert', async ({ homePage }) => {
     const message = await homePage.alerts.clickAndAccept(homePage.alerts.simpleAlert);
-
     expect(message).toBe('I am an alert box!');
   });
 
