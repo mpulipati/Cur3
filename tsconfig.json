@@ -10,5 +10,5 @@
     "sourceMap": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts", "merge.config.ts"]
 }

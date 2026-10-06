@@ -40,7 +40,7 @@ export class PracticeHomePage extends BasePage {
 
     await expect(
       this.page.getByRole('heading', { name: 'Automation Testing Practice' }),
-    ).toBeVisible({ timeout: 20_000 });
+    ).toBeVisible({ timeout: 45_000 });
     await expect(this.form.name).toBeVisible();
   }
 }

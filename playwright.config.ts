@@ -1,11 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 import { env } from './src/config/env';
 
+const storageState = process.env.BLOGSPOT_STORAGE;
+const useChrome = Boolean(process.env.CI || process.env.PW_CHANNEL === 'chrome');
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
   timeout: env.defaultTimeoutMs,
   expect: {
@@ -21,28 +24,35 @@ export default defineConfig({
   use: {
     baseURL: env.baseURL,
     actionTimeout: 15_000,
-    navigationTimeout: 30_000,
+    navigationTimeout: 45_000,
+    locale: 'en-US',
     screenshot: 'only-on-failure',
     video: process.env.CI ? 'retain-on-failure' : 'off',
     trace: 'on-first-retry',
+    launchOptions: {
+      args: ['--disable-blink-features=AutomationControlled'],
+    },
+    ...(storageState ? { storageState } : {}),
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'setup',
+      testMatch: /blogspot\.setup\.ts/,
+      timeout: 180_000,
       use: {
         ...devices['Desktop Chrome'],
-        ...(process.env.CI || process.env.PW_CHANNEL === 'chrome'
-          ? { channel: 'chrome' as const }
-          : {}),
+        ...(useChrome ? { channel: 'chrome' as const } : {}),
+        headless: false,
       },
     },
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
+    {
+      name: 'chromium',
+      testIgnore: /blogspot\.setup\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(useChrome ? { channel: 'chrome' as const } : {}),
+        ...(process.env.CI ? { headless: false } : {}),
+      },
+    },
   ],
 });

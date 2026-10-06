@@ -6,14 +6,9 @@ on:
     branches: [ main, master ]
 
 jobs:
-  test:
-    timeout-minutes: 60
+  session:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shardIndex: [1, 2, 3]
-        shardTotal: [3]
     steps:
     - uses: actions/checkout@v5
     - uses: actions/setup-node@v6
@@ -23,10 +18,44 @@ jobs:
       run: npm ci
     - name: Install Playwright Chrome
       run: npx playwright install --with-deps chrome
-    - name: Stagger shard start
-      run: sleep $(( (${{ matrix.shardIndex }} - 1) * 20 ))
+    - name: Open Blogger in headed Chrome
+      run: xvfb-run --auto-servernum npx playwright test --project=setup
+    - name: Upload Blogger session
+      uses: actions/upload-artifact@v4
+      with:
+        name: blogspot-session
+        path: playwright/.auth/blogspot.json
+        include-hidden-files: true
+        if-no-files-found: error
+        retention-days: 1
+
+  test:
+    timeout-minutes: 60
+    needs: session
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3]
+        shardTotal: [3]
+    env:
+      BLOGSPOT_STORAGE: playwright/.auth/blogspot.json
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-node@v6
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Chrome
+      run: npx playwright install --with-deps chrome
+    - name: Download Blogger session
+      uses: actions/download-artifact@v4
+      with:
+        name: blogspot-session
+        path: playwright/.auth
     - name: Run Playwright tests
-      run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+      run: xvfb-run --auto-servernum npx playwright test --headed --project=chromium --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
     - name: Upload blob report
       if: ${{ !cancelled() }}
       uses: actions/upload-artifact@v4
