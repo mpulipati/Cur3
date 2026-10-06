@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { dismissGoogleConsent, isGoogleBotWall } from '../utils/google-interstitial';
 import { BasePage } from './base.page';
 import { AlertsSection } from './sections/alerts.section';
 import { FilesSection } from './sections/files.section';
@@ -30,7 +31,16 @@ export class PracticeHomePage extends BasePage {
 
   async open(): Promise<void> {
     await this.goto('/');
-    await expect(this.page).toHaveTitle(/Automation Testing Practice/i);
-    await expect(this.page.getByRole('heading', { name: 'Automation Testing Practice' })).toBeVisible();
+    await dismissGoogleConsent(this.page);
+
+    if (await isGoogleBotWall(this.page)) {
+      await this.goto('/');
+      await dismissGoogleConsent(this.page);
+    }
+
+    await expect(
+      this.page.getByRole('heading', { name: 'Automation Testing Practice' }),
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(this.form.name).toBeVisible();
   }
 }

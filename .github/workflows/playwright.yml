@@ -15,14 +15,16 @@ jobs:
         shardIndex: [1, 2, 3]
         shardTotal: [3]
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/checkout@v5
+    - uses: actions/setup-node@v6
       with:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+    - name: Install Playwright Chrome
+      run: npx playwright install --with-deps chrome
+    - name: Stagger shard start
+      run: sleep $(( (${{ matrix.shardIndex }} - 1) * 20 ))
     - name: Run Playwright tests
       run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
     - name: Upload blob report
@@ -39,8 +41,8 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/checkout@v5
+    - uses: actions/setup-node@v6
       with:
         node-version: lts/*
     - name: Install dependencies

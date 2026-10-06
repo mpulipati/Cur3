@@ -31,7 +31,9 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        ...(process.env.PW_CHANNEL === 'chrome' ? { channel: 'chrome' as const } : {}),
+        ...(process.env.CI || process.env.PW_CHANNEL === 'chrome'
+          ? { channel: 'chrome' as const }
+          : {}),
       },
     },
     // {
